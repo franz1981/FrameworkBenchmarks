@@ -189,6 +189,14 @@ class DockerHelper:
                 'soft': 99
             }]
 
+            cpuset_cpus = ''
+
+            if self.benchmarker.config.cpuset_cpus is not None:
+                cpuset_cpus = self.benchmarker.config.cpuset_cpus
+
+            log("Running docker container with cpu set: %s" %
+                                cpuset_cpus)
+
             docker_cmd = ''
             if hasattr(test, 'docker_cmd'):
                 docker_cmd = test.docker_cmd
@@ -205,7 +213,7 @@ class DockerHelper:
                 # to the webserver from IDE
                 if hasattr(test, 'debug_port'):
                     ports[test.debug_port] = test.debug_port
-                    
+
             # Total memory limit allocated for the test container
             if self.benchmarker.config.test_container_memory is not None:
                 mem_limit = self.benchmarker.config.test_container_memory
@@ -235,6 +243,7 @@ class DockerHelper:
                 sysctls=sysctl,
                 remove=True,
                 log_config={'type': None},
+                cpuset_cpus=cpuset_cpus,
                 **extra_docker_args
                 )
 
