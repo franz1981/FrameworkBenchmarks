@@ -53,6 +53,7 @@ class BenchmarkConfig:
         self.network = None
         self.test_container_memory = args.test_container_memory
         self.extra_docker_runtime_args = args.extra_docker_runtime_args
+        self.cpuset_cpus = args.cpuset_cpus
 
         if self.network_mode is None:
             self.network = 'tfb'
