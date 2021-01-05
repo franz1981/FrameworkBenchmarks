@@ -1,34 +1,34 @@
 package io.quarkus.benchmark.resource;
 
-import java.io.StringWriter;
-import java.util.Collections;
-import java.util.Comparator;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
-import com.github.mustachejava.DefaultMustacheFactory;
-import com.github.mustachejava.Mustache;
-import com.github.mustachejava.MustacheFactory;
-
 import io.quarkus.benchmark.model.Fortune;
 import io.quarkus.benchmark.repository.FortuneRepository;
 import io.quarkus.vertx.web.Route;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.templ.rocker.RockerTemplateEngine;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 @ApplicationScoped
 public class FortuneResource extends BaseResource {
 
     @Inject
     FortuneRepository repository;
-    private Mustache template;
-    private Comparator<Fortune> fortuneComparator;
 
+    private Comparator<Fortune> fortuneComparator;
+    private final RockerTemplateEngine templeEngine;
+
+    private static final String FORTUNES_MAP_KEY = "fortunes" ;
+    private static final String FORTUNES_TEMPLATE_FILENAME = "Fortunes.rocker.html" ;
+    private static final CharSequence CONTENT_TYPE_HEADER_VALUE = HttpHeaders.createOptimized("text/html; charset=UTF-8");
 
     public FortuneResource() {
-        MustacheFactory mf = new DefaultMustacheFactory();
-        template = mf.compile("fortunes.mustache");
+        templeEngine = RockerTemplateEngine.create();
         fortuneComparator = Comparator.comparing(fortune -> fortune.getMessage());
     }
 
@@ -38,11 +38,15 @@ public class FortuneResource extends BaseResource {
                 .subscribe().with(fortunes -> {
                     fortunes.add(new Fortune(0, "Additional fortune added at request time."));
                     fortunes.sort(fortuneComparator);
-                    StringWriter writer = new StringWriter();
-                    template.execute(writer, Collections.singletonMap("fortunes", fortunes));
-                    rc.response()
-                    .putHeader(HttpHeaders.CONTENT_TYPE, "text/html; charset=UTF-8")
-                    .end(writer.toString());
+                    templeEngine.render(Collections.singletonMap(FORTUNES_MAP_KEY, fortunes), FORTUNES_TEMPLATE_FILENAME, res -> {
+                        if (res.succeeded()) {
+                            rc.response()
+                                    .putHeader(HttpHeaders.CONTENT_TYPE, CONTENT_TYPE_HEADER_VALUE)
+                                    .end(res.result());
+                        } else {
+                            rc.fail(res.cause());
+                        }
+                    });
                 },
                 t -> handleFail(rc, t));
     }
