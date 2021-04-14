@@ -1,4 +1,5 @@
 FROM maven:3.6.3-jdk-11-slim as maven
+ARG QUARKUS_VERSION=1.13.1.Final
 WORKDIR /quarkus
 ENV MODULE=reactive-routes-pgclient
 
@@ -6,17 +7,17 @@ COPY pom.xml pom.xml
 COPY $MODULE/pom.xml $MODULE/pom.xml
 
 # Uncomment to test pre-release quarkus
-#RUN mkdir -p /root/.m2/repository/io
-#COPY m2-quarkus /root/.m2/repository/io/quarkus
+RUN mkdir -p /root/.m2/repository/io
+COPY m2-quarkus /root/.m2/repository/io/quarkus
 
 WORKDIR /quarkus/$MODULE
-RUN mvn dependency:go-offline -q
+RUN mvn dependency:go-offline -q -Dquarkus.version=$QUARKUS_VERSION
 WORKDIR /quarkus
 
 COPY $MODULE/src $MODULE/src
 
 WORKDIR /quarkus/$MODULE
-RUN mvn package -q
+RUN mvn package -q -Dquarkus.version=$QUARKUS_VERSION
 WORKDIR /quarkus
 
 FROM openjdk:11.0.6-jdk-slim
