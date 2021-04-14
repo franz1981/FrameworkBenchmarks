@@ -1,5 +1,5 @@
 FROM maven:3.6.3-jdk-11-slim as maven
-ARG QUARKUS_VERSION=1.13.1.Final
+ARG QUARKUS_VERSION=999-SNAPSHOT
 WORKDIR /quarkus
 ENV MODULE=reactive-routes-hibernate-reactive
 
