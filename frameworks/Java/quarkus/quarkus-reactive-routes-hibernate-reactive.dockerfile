@@ -28,7 +28,8 @@ COPY --from=maven /quarkus/$MODULE/target/quarkus-app/lib/ lib
 COPY --from=maven /quarkus/$MODULE/target/quarkus-app/app/ app
 COPY --from=maven /quarkus/$MODULE/target/quarkus-app/quarkus/ quarkus
 COPY --from=maven /quarkus/$MODULE/target/quarkus-app/quarkus-run.jar quarkus-run.jar
+ADD run_quarkus.sh /quarkus/run_quarkus.sh
+RUN chmod a+x /quarkus/run_quarkus.sh
 
 EXPOSE 8080
-
-CMD ["java", "-server", "-Djava.util.logging.manager=org.jboss.logmanager.LogManager", "-XX:-UseBiasedLocking", "-XX:+UseStringDeduplication", "-XX:+UseNUMA", "-XX:+UseParallelGC", "-Djava.lang.Integer.IntegerCache.high=10000", "-Dvertx.disableHttpHeadersValidation=true", "-Dvertx.disableMetrics=true", "-Dvertx.disableH2c=true", "-Dvertx.disableWebsockets=true", "-Dvertx.flashPolicyHandler=false", "-Dvertx.threadChecks=false", "-Dvertx.disableContextTimings=true", "-Dhibernate.allow_update_outside_transaction=true", "-Djboss.threads.eqe.statistics=false", "-jar", "quarkus-run.jar"]
+ENTRYPOINT "./run_quarkus.sh"
