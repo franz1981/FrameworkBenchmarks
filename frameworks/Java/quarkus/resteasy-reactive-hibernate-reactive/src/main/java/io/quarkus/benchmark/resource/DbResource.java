@@ -1,7 +1,7 @@
 package io.quarkus.benchmark.resource;
 
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -29,13 +29,15 @@ public class DbResource {
     @GET
     @Path("db")
     public Uni<World> db() {
-        return randomWorld();
+        return worldRepository.findStateless(randomWorldNumber());
     }
 
     @GET
     @Path("queries")
-    public Uni<Collection<World>> queries(@QueryParam("queries") String queries) {
-        return worldRepository.inSession(session -> randomWorldForRead(session, parseQueryCount(queries)));
+    public Uni<List<World>> queries(@QueryParam("queries") String queries) {
+        final int queryCount = parseQueryCount(queries);
+        final Set<Integer> ids = generateNDifferentRandoms(queryCount);
+        return worldRepository.findStateless(ids);
     }
 
     @GET
@@ -44,24 +46,28 @@ public class DbResource {
         return worldRepository.createData();
     }
 
-    private Uni<Collection<World>> randomWorldForRead(Mutiny.Session session, int count) {
+    private Set<Integer> generateNDifferentRandoms(int count) {
         Set<Integer> ids = new HashSet<>(count);
         int counter = 0;
         while (counter < count) {
             counter += ids.add(Integer.valueOf(randomWorldNumber())) ? 1 : 0;
         }
-        return worldRepository.find(session, ids);
+        return ids;
+    }
+
+    private Uni<List<World>> randomWorldsForWrite(Mutiny.Session session, int count) {
+        Set<Integer> ids = generateNDifferentRandoms(count);
+        return worldRepository.findManaged(session, ids);
     }
 
     @GET
     @Path("updates")
-    public Uni<Collection<World>> updates(@QueryParam("queries") String queries) {
+    public Uni<List<World>> updates(@QueryParam("queries") String queries) {
         return worldRepository.inSession(session -> {
-            // FIXME: not supported
-            //          session.setJdbcBatchSize(worlds.size());
+
             session.setFlushMode(FlushMode.MANUAL);
 
-            var worlds = randomWorldForRead(session, parseQueryCount(queries));
+            Uni<List<World>> worlds = randomWorldsForWrite(session, parseQueryCount(queries));
             return worlds.flatMap(worldsCollection -> {
                 worldsCollection.forEach( w -> {
                     //Read the one field, as required by the following rule:
@@ -71,14 +77,10 @@ public class DbResource {
                     //the verification:
                     w.setRandomNumber(randomWorldNumber(previousRead));
                 } );
-                
+
                 return worldRepository.update(session, worldsCollection);
             });
         });
-    }
-
-    private Uni<World> randomWorld() {
-        return worldRepository.find(randomWorldNumber());
     }
 
     private int randomWorldNumber() {
