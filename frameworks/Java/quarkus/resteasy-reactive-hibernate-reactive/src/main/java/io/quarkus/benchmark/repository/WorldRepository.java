@@ -1,7 +1,6 @@
 package io.quarkus.benchmark.repository;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
@@ -9,11 +8,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import javax.inject.Singleton;
 
 import org.hibernate.reactive.mutiny.Mutiny;
-import org.hibernate.reactive.mutiny.Mutiny.Session;
 
 import io.quarkus.benchmark.model.World;
 import io.smallrye.mutiny.Uni;
-
 
 @Singleton
 public class WorldRepository extends BaseRepository {
@@ -40,26 +37,37 @@ public class WorldRepository extends BaseRepository {
         });
     }
 
-    public Uni<World> find(int id) {
-        return inSession(session -> singleFind(session, id));
+    public Uni<World> findStateless(int id) {
+        return inStatelessSession(session -> session.get(World.class, id));
     }
 
-    public Uni<Collection<World>> update(Mutiny.Session s, Collection<World> worlds) {
-        return s.flush()
+    public Uni<List<World>> update(Mutiny.Session session, List<World> worlds) {
+        return session
+                .setBatchSize(worlds.size())
+                .flush()
                 .map(v -> worlds);
-            }
-
-    public Uni<Collection<World>> find(Session s, Set<Integer> ids) {
-        //The rules require individual load: we can't use the Hibernate feature which allows load by multiple IDs as one single operation
-        ArrayList<Uni<World>> l = new ArrayList<>(ids.size());
-        for (Integer id : ids) {
-            l.add(singleFind(s, id));
-        }
-        return Uni.combine().all().unis(l).combinedWith(list -> (List<World>)list);
     }
 
-    private static Uni<World> singleFind(final Mutiny.Session ss, final Integer id) {
-        return ss.find(World.class, id);
+    public Uni<List<World>> findManaged(Mutiny.Session s, Set<Integer> ids) {
+        //The rules require individual load: we can't use the Hibernate feature which allows load by multiple IDs as one single operation
+        List<Uni<? extends World>> l = new ArrayList<>(ids.size());
+        for (Integer id : ids) {
+            l.add(s.find(World.class, id));
+        }
+        return Uni.join().all(l).andFailFast();
+    }
+
+    public Uni<List<World>> findStateless(Mutiny.StatelessSession s, Set<Integer> ids) {
+        //The rules require individual load: we can't use the Hibernate feature which allows load by multiple IDs as one single operation
+        List<Uni<? extends World>> l = new ArrayList<>(ids.size());
+        for (Integer id : ids) {
+            l.add(s.get(World.class, id));
+        }
+        return Uni.join().all(l).andFailFast();
+    }
+
+    public Uni<List<World>> findStateless(Set<Integer> ids) {
+        return inStatelessSession(session -> findStateless(session, ids));
     }
 
 }
