@@ -17,7 +17,9 @@ import org.hibernate.reactive.mutiny.Mutiny;
 
 import io.quarkus.benchmark.model.World;
 import io.quarkus.benchmark.repository.WorldRepository;
+import io.smallrye.context.api.CurrentThreadContext;
 import io.smallrye.mutiny.Uni;
+import org.eclipse.microprofile.context.ThreadContext;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/")
@@ -28,12 +30,14 @@ public class DbResource {
 
     @GET
     @Path("db")
+    @CurrentThreadContext(propagated = {}, cleared = {}, unchanged = ThreadContext.ALL_REMAINING)
     public Uni<World> db() {
         return worldRepository.findStateless(randomWorldNumber());
     }
 
     @GET
     @Path("queries")
+    @CurrentThreadContext(propagated = {}, cleared = {}, unchanged = ThreadContext.ALL_REMAINING)
     public Uni<List<World>> queries(@QueryParam("queries") String queries) {
         final int queryCount = parseQueryCount(queries);
         final int[] ids = generateNDifferentRandoms( queryCount);
@@ -42,6 +46,7 @@ public class DbResource {
 
     @GET
     @Path("createData")
+    @CurrentThreadContext(propagated = {}, cleared = {}, unchanged = ThreadContext.ALL_REMAINING)
     public Uni<Void> createData() {
         return worldRepository.createData();
     }
@@ -75,6 +80,7 @@ public class DbResource {
 
     @GET
     @Path("updates")
+    @CurrentThreadContext(propagated = {}, cleared = {}, unchanged = ThreadContext.ALL_REMAINING)
     public Uni<List<World>> updates(@QueryParam("queries") String queries) {
         return worldRepository.inSession(session -> {
 
