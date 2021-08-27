@@ -4,8 +4,10 @@ import com.fizzed.rocker.Rocker;
 import com.fizzed.rocker.RockerOutput;
 import io.quarkus.benchmark.model.Fortune;
 import io.quarkus.benchmark.repository.FortuneRepository;
+import io.smallrye.context.api.CurrentThreadContext;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.http.HttpHeaders;
+import org.eclipse.microprofile.context.ThreadContext;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -31,6 +33,7 @@ public class FortuneResource  {
 
     @Produces("text/html; charset=UTF-8")
     @GET
+    @CurrentThreadContext(propagated = {}, cleared = {}, unchanged = ThreadContext.ALL_REMAINING)
     public Uni<String> fortunes() {
         return repository.findAll()
                 .map(fortunes -> {
