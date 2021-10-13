@@ -48,25 +48,25 @@ public class WorldRepository extends BaseRepository {
                 .map(v -> worlds);
     }
 
-    public Uni<List<World>> findManaged(Mutiny.Session s, Set<Integer> ids) {
-        //The rules require individual load: we can't use the Hibernate feature which allows load by multiple IDs as one single operation
-        List<Uni<? extends World>> l = new ArrayList<>(ids.size());
+    public Uni<List<World>> findManaged(Mutiny.Session s, int[] ids) {
+        final List<World> worlds = new ArrayList<>(ids.length);
+        Uni<Void> loopRoot = Uni.createFrom().voidItem();
         for (Integer id : ids) {
             l.add(s.find(World.class, id));
         }
         return Uni.join().all(l).andFailFast();
     }
 
-    public Uni<List<World>> findStateless(Mutiny.StatelessSession s, Set<Integer> ids) {
+    public Uni<List<World>> findStateless(Mutiny.StatelessSession s, int[] ids) {
         //The rules require individual load: we can't use the Hibernate feature which allows load by multiple IDs as one single operation
-        List<Uni<? extends World>> l = new ArrayList<>(ids.size());
+        List<Uni<? extends World>> l = new ArrayList<>(ids.length);
         for (Integer id : ids) {
             l.add(s.get(World.class, id));
         }
         return Uni.join().all(l).andFailFast();
     }
 
-    public Uni<List<World>> findStateless(Set<Integer> ids) {
+    public Uni<List<World>> findStateless(int[] ids) {
         return inStatelessSession(session -> findStateless(session, ids));
     }
 

@@ -36,7 +36,7 @@ public class DbResource {
     @Path("queries")
     public Uni<List<World>> queries(@QueryParam("queries") String queries) {
         final int queryCount = parseQueryCount(queries);
-        final Set<Integer> ids = generateNDifferentRandoms(queryCount);
+        final int[] ids = generateNDifferentRandoms( queryCount);
         return worldRepository.findStateless(ids);
     }
 
@@ -46,17 +46,30 @@ public class DbResource {
         return worldRepository.createData();
     }
 
-    private Set<Integer> generateNDifferentRandoms(int count) {
-        Set<Integer> ids = new HashSet<>(count);
-        int counter = 0;
-        while (counter < count) {
-            counter += ids.add(Integer.valueOf(randomWorldNumber())) ? 1 : 0;
+    private int[] generateNDifferentRandoms(int count) {
+        int[] ids = new int[count];
+        int writeIndex = 0;
+        while (writeIndex < count) {
+            //TODO improve this to not use random generators more than necessary:
+            //rather than trying again on duplicate, adapt the random space.
+            final int candidate = randomWorldNumber();
+            boolean foundMatching = false;
+            for (int i=0; i<writeIndex; i++) {
+                if (ids[i]==candidate) {
+                    foundMatching = true;
+                    break;
+                }
+            }
+            if (!foundMatching) {
+                ids[writeIndex]=candidate;
+                writeIndex++;
+            }
         }
         return ids;
     }
 
     private Uni<List<World>> randomWorldsForWrite(Mutiny.Session session, int count) {
-        Set<Integer> ids = generateNDifferentRandoms(count);
+        int[] ids = generateNDifferentRandoms( count);
         return worldRepository.findManaged(session, ids);
     }
 
