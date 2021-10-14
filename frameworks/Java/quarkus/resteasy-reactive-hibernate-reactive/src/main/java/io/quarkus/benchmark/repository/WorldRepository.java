@@ -2,7 +2,6 @@ package io.quarkus.benchmark.repository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.inject.Singleton;
@@ -48,22 +47,28 @@ public class WorldRepository extends BaseRepository {
                 .map(v -> worlds);
     }
 
-    public Uni<List<World>> findManaged(Mutiny.Session s, int[] ids) {
-        final List<World> worlds = new ArrayList<>(ids.length);
-        Uni<Void> loopRoot = Uni.createFrom().voidItem();
-        for (Integer id : ids) {
-            l.add(s.find(World.class, id));
-        }
-        return Uni.join().all(l).andFailFast();
-    }
-
     public Uni<List<World>> findStateless(Mutiny.StatelessSession s, int[] ids) {
-        //The rules require individual load: we can't use the Hibernate feature which allows load by multiple IDs as one single operation
+        //The rules require individual load: we can't use the Hibernate feature which allows load by multiple IDs
+        // as one single operation as Hibernate is too smart and will switch to use batched loads automatically.
+        // Hence, use this awkward alternative:
         List<Uni<? extends World>> l = new ArrayList<>(ids.length);
         for (Integer id : ids) {
             l.add(s.get(World.class, id));
         }
         return Uni.join().all(l).andFailFast();
+    }
+
+    public Uni<List<World>> findManaged(Mutiny.Session s, int[] ids) {
+        final List<World> worlds = new ArrayList<>(ids.length);
+        //The rules require individual load: we can't use the Hibernate feature which allows load by multiple IDs
+        // as one single operation as Hibernate is too smart and will switch to use batched loads.
+        // But also, we can't use "Uni#join" as we did in the above method as managed entities shouldn't use pipelining -
+        // so we also have to avoid Mutiny optimising things by establishing an explicit chain:
+        Uni<Void> loopRoot = Uni.createFrom().voidItem();
+        for (Integer id : ids) {
+            loopRoot = loopRoot.chain(() -> s.find(World.class, id).invoke(word -> worlds.add(word)).replaceWithVoid());
+        }
+        return loopRoot.map(v -> worlds);
     }
 
     public Uni<List<World>> findStateless(int[] ids) {
