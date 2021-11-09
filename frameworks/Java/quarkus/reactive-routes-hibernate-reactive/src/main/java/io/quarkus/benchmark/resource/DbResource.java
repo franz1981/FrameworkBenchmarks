@@ -1,21 +1,17 @@
 package io.quarkus.benchmark.resource;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
-import org.hibernate.FlushMode;
-import org.hibernate.reactive.mutiny.Mutiny;
-
 import io.quarkus.benchmark.model.World;
 import io.quarkus.benchmark.repository.WorldRepository;
 import io.quarkus.vertx.web.Route;
 import io.smallrye.mutiny.Uni;
 import io.vertx.ext.web.RoutingContext;
+import org.hibernate.FlushMode;
+import org.hibernate.reactive.mutiny.Mutiny;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 
 @ApplicationScoped
@@ -26,15 +22,17 @@ public class DbResource extends BaseResource {
 
     @Route(path = "db")
     public void db(RoutingContext rc) {
-        randomWorld().subscribe().with(world -> sendJson(rc, world),
+        worldRepository.findStateless(randomWorldNumber()).subscribe().with(world -> sendJson(rc, world),
                                        t -> handleFail(rc, t));
     }
 
     @Route(path = "queries")
     public void queries(RoutingContext rc) {
-        var queries = rc.request().getParam("queries");
-        worldRepository.inSession(session -> randomWorldForRead(session, parseQueryCount(queries)))
-        .subscribe().with(list -> sendJson(rc, list),
+        final int queryCount = parseQueryCount(rc.request().getParam("queries"));
+        final int[] ids = generateNDifferentRandoms( queryCount);
+        worldRepository
+                .findStateless(ids)
+                .subscribe().with(list -> sendJson(rc, list),
                           t -> handleFail(rc, t));
     }
 
@@ -51,7 +49,7 @@ public class DbResource extends BaseResource {
             //          session.setJdbcBatchSize(worlds.size());
             session.setFlushMode(FlushMode.MANUAL);
 
-            var worlds = randomWorldForRead(session, parseQueryCount(queries));
+            Uni<List<World>> worlds = randomWorldsForWrite(session, parseQueryCount(queries));
             return worlds.flatMap(worldsCollection -> {
                 worldsCollection.forEach( w -> {
                     //Read the one field, as required by the following rule:
@@ -68,24 +66,38 @@ public class DbResource extends BaseResource {
                             t -> handleFail(rc, t));
     }
 
-    private Uni<Collection<World>> randomWorldForRead(Mutiny.Session session, int count) {
-        Set<Integer> ids = new HashSet<>(count);
-        int counter = 0;
-        while (counter < count) {
-            counter += ids.add(Integer.valueOf(randomWorldNumber())) ? 1 : 0;
+    private int[] generateNDifferentRandoms(int count) {
+        int[] ids = new int[count];
+        int writeIndex = 0;
+        while (writeIndex < count) {
+            //TODO improve this to not use random generators more than necessary:
+            //rather than trying again on duplicate, adapt the random space.
+            final int candidate = randomWorldNumber();
+            boolean foundMatching = false;
+            for (int i=0; i<writeIndex; i++) {
+                if (ids[i]==candidate) {
+                    foundMatching = true;
+                    break;
+                }
+            }
+            if (!foundMatching) {
+                ids[writeIndex]=candidate;
+                writeIndex++;
+            }
         }
-        return worldRepository.find(session, ids);
+        return ids;
     }
+
+    private Uni<List<World>> randomWorldsForWrite(Mutiny.Session session, int count) {
+        int[] ids = generateNDifferentRandoms( count);
+        return worldRepository.findManaged(session, ids);
+    }
+
 
     @Route(path = "createdata")
     public void createData(RoutingContext rc) {
         worldRepository.createData().subscribe().with(v -> rc.response().end("Data created"),
                                                       t -> handleFail(rc, t));
-    }
-
-    private Uni<World> randomWorld() {
-        int i = randomWorldNumber();
-        return worldRepository.find(i);
     }
 
     private int randomWorldNumber() {
