@@ -1,5 +1,5 @@
 FROM maven:3.6.3-jdk-11-slim as maven
-ARG QUARKUS_VERSION=999-SNAPSHOT
+ARG QUARKUS_VERSION=2.4.1.Final
 WORKDIR /quarkus
 ENV MODULE=resteasy-hibernate
 
