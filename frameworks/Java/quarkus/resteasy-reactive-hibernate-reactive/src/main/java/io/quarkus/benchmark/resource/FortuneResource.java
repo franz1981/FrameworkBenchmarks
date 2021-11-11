@@ -7,6 +7,7 @@ import io.quarkus.benchmark.repository.FortuneRepository;
 import io.smallrye.context.api.CurrentThreadContext;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.ext.web.templ.rocker.RockerTemplateEngine;
 import org.eclipse.microprofile.context.ThreadContext;
 
 import javax.inject.Inject;
@@ -22,14 +23,11 @@ public class FortuneResource  {
     @Inject
     FortuneRepository repository;
 
-    private Comparator<Fortune> fortuneComparator;
+    private static final Comparator<Fortune> fortuneComparator = Comparator.comparing(fortune -> fortune.getMessage());
+    private static final RockerTemplateEngine templeEngine  = RockerTemplateEngine.create();
 
     private static final String FORTUNES_MAP_KEY = "fortunes";
     private static final String FORTUNES_TEMPLATE_FILENAME = "Fortunes.rocker.html";
-
-    public FortuneResource() {
-        fortuneComparator = Comparator.comparing(fortune -> fortune.getMessage());
-    }
 
     @Produces("text/html; charset=UTF-8")
     @GET
@@ -39,11 +37,7 @@ public class FortuneResource  {
                 .map(fortunes -> {
                     fortunes.add(new Fortune(0, "Additional fortune added at request time."));
                     fortunes.sort(fortuneComparator);
-                    RockerOutput output = Rocker.template(FORTUNES_TEMPLATE_FILENAME)
-                            .bind(Collections.singletonMap(FORTUNES_MAP_KEY, fortunes))
-                            .render();
-
-                    return output.toString();
+                    return templeEngine.render(Collections.singletonMap(FORTUNES_MAP_KEY, fortunes), FORTUNES_TEMPLATE_FILENAME).result().toString();
                 });
     }
 }
