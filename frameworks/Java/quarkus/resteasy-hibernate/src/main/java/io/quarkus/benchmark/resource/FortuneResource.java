@@ -29,11 +29,7 @@ public class FortuneResource {
 
     private static final String FORTUNES_MAP_KEY = "fortunes";
     private static final String FORTUNES_TEMPLATE_FILENAME = "Fortunes.rocker.html";
-    private final Comparator<Fortune> fortuneComparator;
-
-    public FortuneResource() {
-        fortuneComparator = Comparator.comparing(fortune -> fortune.getMessage());
-    }
+    private static final Comparator<Fortune> fortuneComparator = Comparator.comparing(fortune -> fortune.getMessage());
 
     @GET
     @Path("/fortunes")
