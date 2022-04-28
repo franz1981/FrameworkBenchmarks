@@ -2,6 +2,8 @@
 
 JAVA_OPTIONS="-server \
   -Djava.util.logging.manager=org.jboss.logmanager.LogManager \
+  -XX:+UnlockDiagnosticVMOptions \
+  -XX:+DebugNonSafepoints \
   -XX:-UseBiasedLocking \
   -XX:+UseStringDeduplication \
   -XX:+UseNUMA \
