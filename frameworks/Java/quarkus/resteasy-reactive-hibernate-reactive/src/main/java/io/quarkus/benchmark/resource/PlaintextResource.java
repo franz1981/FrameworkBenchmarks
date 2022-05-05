@@ -10,7 +10,7 @@ import io.vertx.core.buffer.Buffer;
 @Path("/plaintext")
 public class PlaintextResource {
     private static final String HELLO_WORLD = "Hello, world!";
-    private static final Buffer HELLO_WORLD_BUFFER = Buffer.factory.directBuffer(HELLO_WORLD, "UTF-8");
+    private static final Buffer HELLO_WORLD_BUFFER = Buffer.buffer(HELLO_WORLD, "UTF-8");
 
     @Produces(MediaType.TEXT_PLAIN)
     @GET
