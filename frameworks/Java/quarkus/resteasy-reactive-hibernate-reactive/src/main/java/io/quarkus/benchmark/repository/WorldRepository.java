@@ -51,7 +51,7 @@ public class WorldRepository extends BaseRepository {
         //The rules require individual load: we can't use the Hibernate feature which allows load by multiple IDs
         // as one single operation as Hibernate is too smart and will switch to use batched loads automatically.
         // Hence, use this awkward alternative:
-        List<Uni<World>> l = new ArrayList<>(ids.length);
+        List<Uni<? extends World>> l = new ArrayList<>(ids.length);
         for (Integer id : ids) {
             l.add(s.get(World.class, id));
         }
