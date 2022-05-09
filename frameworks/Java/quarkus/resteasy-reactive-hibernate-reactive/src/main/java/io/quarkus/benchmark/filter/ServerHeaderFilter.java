@@ -3,6 +3,7 @@ package io.quarkus.benchmark.filter;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
 
 import org.jboss.resteasy.reactive.server.ServerResponseFilter;
@@ -18,7 +19,12 @@ public class ServerHeaderFilter {
     private static final CharSequence SERVER_HEADER_VALUE = HttpHeaders.createOptimized("Quarkus");
     private static final CharSequence DATE_HEADER_NAME = HttpHeaders.createOptimized("Date");
     
-    private CharSequence date;
+    private volatile CharSequence date;
+
+    @PostConstruct
+    public void init() {
+        date = HttpHeaders.createOptimized(DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()));
+    }
 
     @Scheduled(every="1s")
     void increment() {
