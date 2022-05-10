@@ -9,6 +9,7 @@ import javax.ws.rs.core.MediaType;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.smallrye.common.annotation.NonBlocking;
 import io.smallrye.context.api.CurrentThreadContext;
 import io.vertx.core.buffer.Buffer;
 import org.eclipse.microprofile.context.ThreadContext;
@@ -27,6 +28,7 @@ public class PlaintextResource {
     @Produces(MediaType.TEXT_PLAIN)
     @GET
     @CurrentThreadContext(propagated = {}, cleared = {}, unchanged = ThreadContext.ALL_REMAINING)
+    @NonBlocking
     public Buffer plaintext() {
         return HELLO_WORLD_BUFFER;
     }
