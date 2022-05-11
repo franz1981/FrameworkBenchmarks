@@ -1,6 +1,17 @@
 #!/bin/bash
 
+# JFR: -XX:+FlightRecorder -XX:StartFlightRecording=duration=60s,filename=/quarkus/trace.jfr
+#       and use docker cp to read it
+
+# PROFILING: -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints
+
+# DEBUG: -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
+
+# Consider -Dquarkus.http.io-threads==$((`grep --count ^processor /proc/cpuinfo`)) \
+
 JAVA_OPTIONS="-server \
+  -Dio.netty.buffer.checkBounds=false \
+  -Dio.netty.buffer.checkAccessible=false \
   -Djava.util.logging.manager=org.jboss.logmanager.LogManager \
   -XX:-UseBiasedLocking \
   -XX:+UseStringDeduplication \
