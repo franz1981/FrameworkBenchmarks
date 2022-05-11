@@ -15,6 +15,7 @@ JAVA_OPTIONS="-server \
   -Dvertx.threadChecks=false \
   -Dvertx.disableContextTimings=true \
   -Dhibernate.allow_update_outside_transaction=true \
+  -Dmutiny.disableCallBackDecorators \
   -Djboss.threads.eqe.statistics=false \
   $@"
 
