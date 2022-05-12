@@ -18,6 +18,7 @@ JAVA_OPTIONS="-server \
   -XX:+UseNUMA \
   -XX:+UseParallelGC \
   -Djava.lang.Integer.IntegerCache.high=10000 \
+  -Dvertx.disableURIValidation=true \
   -Dvertx.disableHttpHeadersValidation=true \
   -Dvertx.disableMetrics=true \
   -Dvertx.disableH2c=true \
@@ -27,6 +28,7 @@ JAVA_OPTIONS="-server \
   -Dvertx.disableContextTimings=true \
   -Dhibernate.allow_update_outside_transaction=true \
   -Djboss.threads.eqe.statistics=false \
+  -Dmutiny.disableCallBackDecorators=true \
   $@"
 
 java $JAVA_OPTIONS -jar quarkus-run.jar
