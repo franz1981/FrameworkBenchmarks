@@ -14,6 +14,10 @@
     <dependencies>
         <dependency>
             <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-benchmark-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
             <artifactId>quarkus-scheduler</artifactId>
         </dependency>
         <dependency>
@@ -35,6 +39,10 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web-templ-rocker</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-benchmark-common</artifactId>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>

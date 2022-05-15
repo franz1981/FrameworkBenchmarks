@@ -14,6 +14,10 @@
     <dependencies>
         <dependency>
             <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-benchmark-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-orm</artifactId>
         </dependency>
         <dependency>

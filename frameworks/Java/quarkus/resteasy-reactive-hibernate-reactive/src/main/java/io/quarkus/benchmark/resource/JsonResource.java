@@ -19,6 +19,7 @@ public class JsonResource  {
     @CurrentThreadContext(propagated = {}, cleared = {}, unchanged = ThreadContext.ALL_REMAINING)
     @NonBlocking
     public Message json() {
+        // https://github.com/TechEmpower/FrameworkBenchmarks/wiki/Project-Information-Framework-Tests-Overview#json-serialization
         return new Message(HELLO);
     }
 }
