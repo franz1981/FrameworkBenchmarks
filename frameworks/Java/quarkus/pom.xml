@@ -18,10 +18,16 @@
         <module>resteasy-hibernate</module>
         <module>resteasy-reactive-hibernate</module>
         <module>resteasy-reactive-hibernate-reactive</module>
+        <module>quarkus-benchmark-common</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-benchmark-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-bom</artifactId>
