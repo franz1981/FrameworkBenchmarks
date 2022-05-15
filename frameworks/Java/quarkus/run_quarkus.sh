@@ -30,6 +30,7 @@ JAVA_OPTIONS="-server \
   -Dvertx.threadChecks=false \
   -Dvertx.disableContextTimings=true \
   -Dhibernate.allow_update_outside_transaction=true \
+  -Dio.quarkus.vertx.core.runtime.context.VertxContextSafetyToggle.I_HAVE_CHECKED_EVERYTHING=true \
   -Djboss.threads.eqe.statistics=false \
   -Dmutiny.disableCallBackDecorators=true \
   $@"
