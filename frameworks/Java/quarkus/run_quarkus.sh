@@ -7,9 +7,12 @@
 
 # DEBUG: -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
 
-# Consider -Dquarkus.http.io-threads==$((`grep --count ^processor /proc/cpuinfo`)) \
+# Consider using -Dquarkus.http.io-threads=$((`grep --count ^processor /proc/cpuinfo`)) \
 
 JAVA_OPTIONS="-server \
+  -Dquarkus.vertx.prefer-native-transport=true  \
+  -XX:-StackTraceInThrowable \
+  -Dquarkus.http.accept-backlog=-1 \
   -Dio.netty.buffer.checkBounds=false \
   -Dio.netty.buffer.checkAccessible=false \
   -Djava.util.logging.manager=org.jboss.logmanager.LogManager \
