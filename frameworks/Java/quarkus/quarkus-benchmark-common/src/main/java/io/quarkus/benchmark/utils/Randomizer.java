@@ -1,5 +1,7 @@
 package io.quarkus.benchmark.utils;
 
+import io.netty.util.concurrent.FastThreadLocal;
+
 import java.util.ArrayList;
 
 /**
@@ -20,7 +22,7 @@ public final class Randomizer {
     static final short RANGE_SPACE = MAX_OF_RANGE - MIN_OF_RANGE + 1;
     private final static Integer[] randomSequenceBoxed = initRange();
 
-    private static final ThreadLocal<Randomizer.ThreadlocalizedRandomizer> localRandom = new ThreadLocal<>() {
+    private static final FastThreadLocal<ThreadlocalizedRandomizer> localRandom = new FastThreadLocal<>() {
         @Override
         protected io.quarkus.benchmark.utils.Randomizer.ThreadlocalizedRandomizer initialValue() {
             return new ThreadlocalizedRandomizer();
