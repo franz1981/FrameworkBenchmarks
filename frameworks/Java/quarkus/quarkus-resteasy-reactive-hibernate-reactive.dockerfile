@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/openjdk-11:1.11 as maven
+FROM docker.io/maven:3.8.4-eclipse-temurin-11 as maven
 WORKDIR /quarkus
 ENV MODULE=resteasy-reactive-hibernate-reactive
 
@@ -25,7 +25,7 @@ WORKDIR /quarkus/$MODULE
 RUN mvn package -B -q
 WORKDIR /quarkus
 
-FROM registry.access.redhat.com/ubi8/openjdk-11:1.11
+FROM docker.io/eclipse-temurin:11-jdk
 WORKDIR /quarkus
 ENV MODULE=resteasy-reactive-hibernate-reactive
 
@@ -33,7 +33,7 @@ COPY --from=maven /quarkus/$MODULE/target/quarkus-app/lib/ lib
 COPY --from=maven /quarkus/$MODULE/target/quarkus-app/app/ app
 COPY --from=maven /quarkus/$MODULE/target/quarkus-app/quarkus/ quarkus
 COPY --from=maven /quarkus/$MODULE/target/quarkus-app/quarkus-run.jar quarkus-run.jar
-COPY --chmod=0755 run_quarkus.sh run_quarkus.sh
+COPY run_quarkus.sh run_quarkus.sh
 
 EXPOSE 8080
 ENTRYPOINT "./run_quarkus.sh"
