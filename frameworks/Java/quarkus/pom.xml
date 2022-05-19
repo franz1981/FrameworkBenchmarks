@@ -24,6 +24,11 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>org.hibernate.reactive</groupId>
+                <artifactId>hibernate-reactive-core</artifactId>
+                <version>1.1.6.Final</version>
+            </dependency>
+            <dependency>
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-benchmark-common</artifactId>
                 <version>${project.version}</version>
