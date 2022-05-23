@@ -10,6 +10,8 @@
 # Consider using -Dquarkus.http.io-threads=$((`grep --count ^processor /proc/cpuinfo`)) \
 
 JAVA_OPTIONS="-server \
+  -Dquarkus.http.io-threads=$((`grep --count ^processor /proc/cpuinfo`)) \
+  -Dquarkus.vertx.event-loops-pool-size=$((`grep --count ^processor /proc/cpuinfo`)) \
   -Dquarkus.vertx.prefer-native-transport=true  \
   -XX:-StackTraceInThrowable \
   -Dquarkus.http.accept-backlog=-1 \
@@ -18,7 +20,6 @@ JAVA_OPTIONS="-server \
   -Djava.util.logging.manager=org.jboss.logmanager.LogManager \
   -XX:-UseBiasedLocking \
   -XX:+UseStringDeduplication \
-  -XX:+UseNUMA \
   -XX:+UseParallelGC \
   -Djava.lang.Integer.IntegerCache.high=10000 \
   -Dvertx.disableURIValidation=true \
