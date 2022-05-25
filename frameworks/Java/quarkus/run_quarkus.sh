@@ -10,7 +10,6 @@
 # Consider using -Dquarkus.http.io-threads=$((`grep --count ^processor /proc/cpuinfo`)) \
 
 JAVA_OPTIONS="-server \
-  -Xlog:gc* \
   -Dquarkus.http.io-threads=$((`grep --count ^processor /proc/cpuinfo`)) \
   -Dquarkus.vertx.event-loops-pool-size=$((`grep --count ^processor /proc/cpuinfo`)) \
   -XX:InitialRAMPercentage=50 \
