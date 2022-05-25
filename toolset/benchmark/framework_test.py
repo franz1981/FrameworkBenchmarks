@@ -39,6 +39,16 @@ class FrameworkTest:
     # Public Methods
     ##########################################################################################
 
+    def restart(self, container):
+        '''
+        Restart the test implementation
+        '''
+        self.benchmarker.docker_helper.stop([container])
+        test_log_dir = os.path.join(self.benchmarker.results.directory, self.name.lower())
+        run_log_dir = os.path.join(test_log_dir, 'run')
+        return self.benchmarker.docker_helper.run(self, run_log_dir)
+
+
     def start(self):
         '''
         Start the test implementation
@@ -61,6 +71,7 @@ class FrameworkTest:
             return None
 
         return self.benchmarker.docker_helper.run(self, run_log_dir)
+
 
     def is_accepting_requests(self):
         '''
