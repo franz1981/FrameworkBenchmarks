@@ -210,7 +210,7 @@ class Benchmarker:
             # Benchmark this test
             if self.config.mode == "benchmark":
                 self.time_logger.mark_benchmarking_start()
-                self.__benchmark(test, benchmark_log)
+                self.__benchmark(test, benchmark_log, container)
                 self.time_logger.log_benchmarking_end(
                     log_prefix=log_prefix, file=benchmark_log)
 
@@ -253,7 +253,7 @@ class Benchmarker:
         return self.__exit_test(
             success=True, prefix=log_prefix, file=benchmark_log)
 
-    def __benchmark(self, framework_test, benchmark_log):
+    def __benchmark(self, framework_test, benchmark_log, container):
         '''
         Runs the benchmark for each type of test that it implements
         '''
@@ -296,7 +296,10 @@ class Benchmarker:
             log("Complete", file=benchmark_log)
 
         for test_type in framework_test.runTests:
+            log("Restarting server:", file=benchmark_log)
+            container = framework_test.restart(container)
             benchmark_type(test_type)
+
 
     def __begin_logging(self, framework_test, test_type):
         '''
