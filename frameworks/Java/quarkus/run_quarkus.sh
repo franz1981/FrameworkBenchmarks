@@ -12,9 +12,6 @@
 JAVA_OPTIONS="-server \
   -Dquarkus.http.io-threads=$((`grep --count ^processor /proc/cpuinfo`)) \
   -Dquarkus.vertx.event-loops-pool-size=$((`grep --count ^processor /proc/cpuinfo`)) \
-  -XX:InitialRAMPercentage=50 \
-  -XX:MaxRAMPercentage=50 \
-  -XX:+AlwaysPreTouch \
   -Dquarkus.vertx.prefer-native-transport=true  \
   -XX:-StackTraceInThrowable \
   -Dquarkus.http.accept-backlog=-1 \
