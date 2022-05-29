@@ -11,6 +11,7 @@
 
 JAVA_OPTIONS="-server \
   -Dquarkus.http.io-threads=$((`grep --count ^processor /proc/cpuinfo`)) \
+  -XX:TieredStopAtLevel=1 -XX:-TieredCompilation \
   -Dquarkus.vertx.event-loops-pool-size=$((`grep --count ^processor /proc/cpuinfo`)) \
   -Dquarkus.vertx.prefer-native-transport=true  \
   -XX:-StackTraceInThrowable \
