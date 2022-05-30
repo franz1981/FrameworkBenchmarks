@@ -25,7 +25,7 @@ WORKDIR /quarkus/$MODULE
 RUN mvn package -B -q
 WORKDIR /quarkus
 
-FROM docker.io/eclipse-temurin:11-jdk
+FROM ghcr.io/graalvm/jdk:java11
 WORKDIR /quarkus
 ENV MODULE=resteasy-reactive-hibernate-reactive
 
