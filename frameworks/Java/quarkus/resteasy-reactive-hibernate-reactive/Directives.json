@@ -1,0 +1,9 @@
+[
+  {
+    match: "*HttpObjectEncoder.encode",
+
+    inline : ["-*HttpObjectEncoder.encode"],
+
+    PrintAssembly:true
+  }
+]

@@ -9,7 +9,13 @@
 
 # Consider using -Dquarkus.http.io-threads=$((`grep --count ^processor /proc/cpuinfo`)) \
 
+# -XX:CompileCommand=print,HttpObjectEncoder::encode \
+#  -XX:CompileCommand=print,AbstractChannelHandlerContext::invokeWrite0 \
+
 JAVA_OPTIONS="-server \
+  -XX:+UnlockDiagnosticVMOptions \
+  -XX:CompilerDirectivesFile=Directives.json \
+  -XX:+DebugNonSafepoints \
   -Dquarkus.vertx.prefer-native-transport=true  \
   -XX:-StackTraceInThrowable \
   -Dquarkus.http.accept-backlog=-1 \
