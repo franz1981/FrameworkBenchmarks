@@ -33,6 +33,9 @@ COPY --from=maven /quarkus/$MODULE/target/quarkus-app/lib/ lib
 COPY --from=maven /quarkus/$MODULE/target/quarkus-app/app/ app
 COPY --from=maven /quarkus/$MODULE/target/quarkus-app/quarkus/ quarkus
 COPY --from=maven /quarkus/$MODULE/target/quarkus-app/quarkus-run.jar quarkus-run.jar
+COPY --from=maven /quarkus/$MODULE/Directives.json Directives.json
+COPY --from=maven /quarkus/$MODULE/hsdis-amd64.so $JAVA_HOME/lib/server/hsdis-amd64.so
+
 COPY run_quarkus.sh run_quarkus.sh
 
 EXPOSE 8080
