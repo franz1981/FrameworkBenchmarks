@@ -11,10 +11,7 @@
 
 JAVA_OPTIONS="-server \
   -XX:+UnlockDiagnosticVMOptions \
-  -XX:ReservedCodeCacheSize=256m  \
-  -XX:+PrintCodeCacheOnCompilation \
-  -XX:-UseOnStackReplacement \
-  -XX:+PrintCompilation \
+  -XX:StartFlightRecording=filename=/tmp/log/compile.jfr,settings=compile.jfc,dumponexit=true  \
   -Dquarkus.vertx.prefer-native-transport=true  \
   -XX:-StackTraceInThrowable \
   -Dquarkus.http.accept-backlog=-1 \
