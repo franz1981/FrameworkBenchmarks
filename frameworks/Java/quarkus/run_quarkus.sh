@@ -13,6 +13,7 @@ JAVA_OPTIONS="-server \
   -XX:+UnlockDiagnosticVMOptions \
   -XX:ReservedCodeCacheSize=256m  \
   -XX:+PrintCodeCacheOnCompilation \
+  -XX:-UseOnStackReplacement \
   -XX:+PrintCompilation \
   -Dquarkus.vertx.prefer-native-transport=true  \
   -XX:-StackTraceInThrowable \
