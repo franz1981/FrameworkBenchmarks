@@ -10,6 +10,14 @@
 # Consider using -Dquarkus.http.io-threads=$((`grep --count ^processor /proc/cpuinfo`)) \
 
 JAVA_OPTIONS="-server \
+  -XX:FreqInlineSize=405 \
+  -XX:MaxInlineLevel=27 \
+  -XX:MinInliningThreshold=38 \
+  -XX:InlineSmallCode=3257 \
+  -XX:LoopUnrollLimit=58 \
+  -XX:LoopUnrollMin=18 \
+  -XX:-UseSuperWord \
+  -XX:-UseTypeSpeculation \
   -XX:+UnlockDiagnosticVMOptions -XX:+DebugNonSafepoints \
   -Dquarkus.vertx.prefer-native-transport=true  \
   -XX:-StackTraceInThrowable \
