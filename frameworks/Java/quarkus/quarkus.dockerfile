@@ -1,11 +1,9 @@
 FROM docker.io/maven:3.8.4-eclipse-temurin-11 as maven
 WORKDIR /quarkus
-ENV MODULE=resteasy-hibernate
+ENV MODULE=resteasy-reactive-hibernate-reactive
 
 COPY pom.xml pom.xml
 COPY quarkus-benchmark-common quarkus-benchmark-common/
-COPY resteasy-hibernate resteasy-hibernate/
-COPY resteasy-reactive-hibernate resteasy-reactive-hibernate/
 COPY resteasy-reactive-hibernate-reactive resteasy-reactive-hibernate-reactive/
 
 # Uncomment to test pre-release quarkus
@@ -27,12 +25,15 @@ WORKDIR /quarkus
 
 FROM docker.io/eclipse-temurin:11-jdk
 WORKDIR /quarkus
-ENV MODULE=resteasy-hibernate
+ENV MODULE=resteasy-reactive-hibernate-reactive
 
 COPY --from=maven /quarkus/$MODULE/target/quarkus-app/lib/ lib
 COPY --from=maven /quarkus/$MODULE/target/quarkus-app/app/ app
 COPY --from=maven /quarkus/$MODULE/target/quarkus-app/quarkus/ quarkus
 COPY --from=maven /quarkus/$MODULE/target/quarkus-app/quarkus-run.jar quarkus-run.jar
+COPY --from=maven /quarkus/$MODULE/Directives.json Directives.json
+COPY --from=maven /quarkus/$MODULE/hsdis-amd64.so $JAVA_HOME/lib/server/hsdis-amd64.so
+
 COPY run_quarkus.sh run_quarkus.sh
 
 EXPOSE 8080

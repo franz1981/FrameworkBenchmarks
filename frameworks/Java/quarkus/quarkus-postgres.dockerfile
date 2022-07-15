@@ -4,8 +4,6 @@ ENV MODULE=resteasy-reactive-hibernate-reactive
 
 COPY pom.xml pom.xml
 COPY quarkus-benchmark-common quarkus-benchmark-common/
-COPY resteasy-hibernate resteasy-hibernate/
-COPY resteasy-reactive-hibernate resteasy-reactive-hibernate/
 COPY resteasy-reactive-hibernate-reactive resteasy-reactive-hibernate-reactive/
 
 # Uncomment to test pre-release quarkus
