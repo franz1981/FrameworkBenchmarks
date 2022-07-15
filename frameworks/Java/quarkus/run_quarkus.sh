@@ -14,11 +14,6 @@
 
 JAVA_OPTIONS="-server \
   -XX:+UnlockDiagnosticVMOptions \
-  -XX:+UnlockDiagnosticVMOptions \
-  -XX:+TraceClassLoading \
-  -XX:+LogCompilation \
-  -XX:+PrintAssembly \
-  -XX:LogFile=/tmp/logs/compilation.log \
   -XX:CompilerDirectivesFile=Directives.json \
   -XX:+DebugNonSafepoints \
   -Dquarkus.vertx.prefer-native-transport=true  \

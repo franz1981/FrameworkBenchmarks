@@ -36,12 +36,6 @@ COPY --from=maven /quarkus/$MODULE/target/quarkus-app/quarkus-run.jar quarkus-ru
 COPY --from=maven /quarkus/$MODULE/Directives.json Directives.json
 COPY --from=maven /quarkus/$MODULE/hsdis-amd64.so $JAVA_HOME/lib/server/hsdis-amd64.so
 
-RUN mkdir -p /tmp/logs
-COPY --from=maven /quarkus/$MODULE/target/quarkus-app/lib/ /tmp/logs/jar/lib
-COPY --from=maven /quarkus/$MODULE/target/quarkus-app/app/ /tmp/logs/jar/app
-COPY --from=maven /quarkus/$MODULE/target/quarkus-app/quarkus/ /tmp/logs/jar/quarkus
-COPY --from=maven /quarkus/$MODULE/target/quarkus-app/quarkus-run.jar /tmp/logs/jar/quarkus-run.jar
-
 COPY run_quarkus.sh run_quarkus.sh
 
 EXPOSE 8080
