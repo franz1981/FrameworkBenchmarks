@@ -1,9 +1,11 @@
 [
   {
-    match: "*HttpObjectEncoder.encode",
+    match: ["*HttpObjectEncoder*.*", "*MessageToMessageEncoder*.*"],
 
-    inline : ["-*HttpObjectEncoder.encode"],
+    PrintAssembly:true,
 
-    PrintAssembly:true
+    PrintInlining: true,
+
+    Log: true
   }
 ]
