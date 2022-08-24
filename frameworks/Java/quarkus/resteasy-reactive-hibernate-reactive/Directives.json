@@ -1,6 +1,11 @@
 [
   {
-    match: ["*HttpObjectEncoder*.*", "*MessageToMessageEncoder*.*"],
+    match: [
+      "*HttpObjectEncoder*.*",
+      "*MessageToMessageEncoder*.*",
+      "*AbstractEntityPersister*.*",
+      "*HttpObjectDecoder*.*"
+    ],
 
     PrintAssembly:true,
 
