@@ -8,10 +8,10 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.templ.rocker.impl.VertxBufferOutput;
 import org.eclipse.microprofile.context.ThreadContext;
 
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 import java.util.Comparator;
 
 @Path("/fortunes")
