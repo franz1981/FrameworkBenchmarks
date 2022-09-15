@@ -1,13 +1,11 @@
 [
   {
     match: [
-      "*HttpObjectEncoder*.*",
-      "*MessageToMessageEncoder*.*",
-      "*AbstractEntityPersister*.*",
-      "*HttpObjectDecoder*.*"
+      "*AbstractChannelHandlerContext*.*",
+      "*ByteToMessageDecoder.fireChannelRead"
     ],
 
-    PrintAssembly:true,
+    PrintAssembly: true,
 
     PrintInlining: true,
 
