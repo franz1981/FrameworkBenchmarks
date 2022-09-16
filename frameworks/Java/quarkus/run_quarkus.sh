@@ -14,7 +14,6 @@
 
 JAVA_OPTIONS="-server \
   -XX:+UnlockDiagnosticVMOptions \
-  -XX:CompilerDirectivesFile=Directives.json \
   -XX:+DebugNonSafepoints \
   -Dquarkus.vertx.prefer-native-transport=true  \
   -XX:-StackTraceInThrowable \
