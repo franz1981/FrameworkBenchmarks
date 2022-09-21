@@ -17,97 +17,145 @@
 package io.helidon.benchmark;
 
 import java.io.IOException;
-import java.util.logging.LogManager;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
-import io.helidon.benchmark.models.DbRepository;
-import io.helidon.benchmark.models.JdbcRepository;
-import io.helidon.benchmark.services.DbService;
-import io.helidon.benchmark.services.FortuneService;
-import io.helidon.benchmark.services.JsonService;
-import io.helidon.benchmark.services.PlainTextService;
-import io.helidon.config.Config;
-import io.helidon.media.jsonp.JsonpSupport;
-import io.helidon.webserver.Routing;
-import io.helidon.webserver.WebServer;
+import com.jsoniter.output.JsonStream;
+import com.jsoniter.output.JsonStreamPool;
+import com.jsoniter.spi.JsonException;
+import io.helidon.common.LogConfig;
+import io.helidon.common.http.Http;
+import io.helidon.nima.webserver.WebServer;
+import io.helidon.nima.webserver.http.Handler;
+import io.helidon.nima.webserver.http.HttpRules;
+import io.helidon.nima.webserver.http.ServerRequest;
+import io.helidon.nima.webserver.http.ServerResponse;
 
 /**
  * Simple Hello World rest application.
  */
 public final class Main {
 
-    private static final String SERVER_HEADER = "Server";
-    private static final String SERVER_NAME = "Helidon";
-
-    /**
-     * Cannot be instantiated.
-     */
-    private Main() {
-    }
-
-    private static DbRepository getRepository(Config config) {
-        return new JdbcRepository(config);
-    }
-
-    /**
-     * Creates new {@link Routing}.
-     *
-     * @return the new instance
-     */
-    private static Routing createRouting(Config config) {
-        DbRepository repository = getRepository(config);
-
-        return Routing.builder()
-                .any((req, res) -> {
-                    res.headers().add(SERVER_HEADER, SERVER_NAME);
-                    req.next();
-                })
-                .register(new JsonService())
-                .register(new PlainTextService())
-                .register(new DbService(repository))
-                .register(new FortuneService(repository))
-                .build();
-    }
-
-    /**
-     * Application main entry point.
-     *
-     * @param args command line arguments.
-     * @throws IOException if there are problems reading logging properties
-     */
-    public static void main(final String[] args) throws IOException {
-        startServer();
-    }
-
     /**
      * Start the server.
      *
-     * @return the created {@link WebServer} instance
-     * @throws IOException if there are problems reading logging properties
+     * @param args ignored
      */
-    private static WebServer startServer() throws IOException {
+    public static void main(String[] args) {
+        // logging and config
+        LogConfig.configureRuntime();
 
-        // load logging configuration
-        LogManager.getLogManager().readConfiguration(
-                Main.class.getResourceAsStream("/logging.properties"));
+        WebServer.builder()
+                .routing(Main::routing)
+                .start();
+    }
 
-        // By default this will pick up application.yaml from the classpath
-        Config config = Config.create();
+    // exposed for tests
+    static void routing(HttpRules rules) {
+        rules.get("/plaintext", new PlaintextHandler())
+                .get("/json", new JsonHandler())
+                .get("/10k", new JsonKHandler(10));
+    }
 
-        // Build server with JSONP support
-        WebServer server = WebServer.builder(createRouting(config))
-                .config(config.get("server"))
-                .addMediaSupport(JsonpSupport.create())
-                .build();
+    private static byte[] serializeMsg(Message obj) {
+        JsonStream stream = JsonStreamPool.borrowJsonStream();
+        try {
+            stream.reset(null);
+            stream.writeVal(Message.class, obj);
+            return Arrays.copyOfRange(stream.buffer().data(), 0, stream.buffer().tail());
+        } catch (IOException e) {
+            throw new JsonException(e);
+        } finally {
+            JsonStreamPool.returnJsonStream(stream);
+        }
+    }
 
-        // Start the server and print some info.
-        server.start().thenAccept(ws -> {
-            System.out.println("WEB server is up! http://localhost:" + ws.port());
-        });
+    static class PlaintextHandler implements Handler {
+        static final Http.HeaderValue CONTENT_TYPE = Http.HeaderValue.createCached(Http.Header.CONTENT_TYPE,
+                "text/plain; charset=UTF-8");
+        static final Http.HeaderValue CONTENT_LENGTH = Http.HeaderValue.createCached(Http.Header.CONTENT_LENGTH, "13");
+        static final Http.HeaderValue SERVER = Http.HeaderValue.createCached(Http.Header.SERVER, "Nima");
 
-        // Server threads are not demon. NO need to block. Just react.
-        server.whenShutdown().thenRun(()
-                -> System.out.println("WEB server is DOWN. Good bye!"));
+        private static final byte[] RESPONSE_BYTES = "Hello, World!".getBytes(StandardCharsets.UTF_8);
 
-        return server;
+        @Override
+        public void handle(ServerRequest req, ServerResponse res) {
+            res.header(CONTENT_LENGTH);
+            res.header(CONTENT_TYPE);
+            res.header(SERVER);
+            res.send(RESPONSE_BYTES);
+        }
+    }
+
+    static class JsonHandler implements Handler {
+        static final Http.HeaderValue SERVER = Http.HeaderValue.createCached(Http.Header.SERVER, "Nima");
+        private static final String MESSAGE = "Hello, World!";
+        private static final int JSON_LENGTH = serializeMsg(new Message(MESSAGE)).length;
+        static final Http.HeaderValue CONTENT_LENGTH = Http.HeaderValue.createCached(Http.Header.CONTENT_LENGTH,
+                String.valueOf(JSON_LENGTH));
+
+        @Override
+        public void handle(ServerRequest req, ServerResponse res) {
+            res.header(CONTENT_LENGTH);
+            res.header(Http.HeaderValues.CONTENT_TYPE_JSON);
+            res.header(SERVER);
+            res.send(serializeMsg(newMsg()));
+        }
+
+        private static Message newMsg() {
+            return new Message("Hello, World!");
+        }
+    }
+
+    static class JsonKHandler implements Handler {
+        static final Http.HeaderValue SERVER = Http.HeaderValue.createCached(Http.Header.SERVER, "Nima");
+        private final Http.HeaderValue contentLength;
+        private final String message;
+
+        JsonKHandler(int kilobytes) {
+            this.message = "a".repeat(1024 * kilobytes);
+            int length = serializeMsg(new Message(message)).length;
+            this.contentLength = Http.HeaderValue.createCached(Http.Header.CONTENT_LENGTH,
+                    String.valueOf(length));
+        }
+
+        @Override
+        public void handle(ServerRequest req, ServerResponse res) {
+            res.header(contentLength);
+            res.header(Http.HeaderValues.CONTENT_TYPE_JSON);
+            res.header(SERVER);
+            res.send(serializeMsg(newMsg()));
+        }
+
+        private Message newMsg() {
+            return new Message(message);
+        }
+    }
+
+    /**
+     * Message to be serialized as JSON.
+     */
+    public static final class Message {
+
+        private final String message;
+
+        /**
+         * Construct a new message.
+         *
+         * @param message message string
+         */
+        public Message(String message) {
+            super();
+            this.message = message;
+        }
+
+        /**
+         * Get message string.
+         *
+         * @return message string
+         */
+        public String getMessage() {
+            return message;
+        }
     }
 }
