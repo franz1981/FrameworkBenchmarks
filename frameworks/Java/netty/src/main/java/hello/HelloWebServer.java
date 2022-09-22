@@ -11,8 +11,6 @@ import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
-import io.netty.channel.kqueue.KQueue;
-import io.netty.channel.kqueue.KQueueServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.incubator.channel.uring.IOUring;
@@ -35,16 +33,16 @@ public class HelloWebServer {
 	}
 
 	public void run() throws Exception {
+		final int cores = Runtime.getRuntime().availableProcessors();
 		// Configure the server.
 		if (IOUring.isAvailable()) {
-			doRun(new IOUringEventLoopGroup(), IOUringServerSocketChannel.class, IoMultiplexer.IO_URING);
+			doRun(new IOUringEventLoopGroup(cores),
+					IOUringServerSocketChannel.class, IoMultiplexer.IO_URING);
 		} else
 			if (Epoll.isAvailable()) {
-			doRun(new EpollEventLoopGroup(), EpollServerSocketChannel.class, IoMultiplexer.EPOLL);
-		} else if (KQueue.isAvailable()) {
-			doRun(new EpollEventLoopGroup(), KQueueServerSocketChannel.class, IoMultiplexer.KQUEUE);
+			doRun(new EpollEventLoopGroup(cores), EpollServerSocketChannel.class, IoMultiplexer.EPOLL);
 		} else {
-			doRun(new NioEventLoopGroup(), NioServerSocketChannel.class, IoMultiplexer.JDK);
+			doRun(new NioEventLoopGroup(cores), NioServerSocketChannel.class, IoMultiplexer.JDK);
 		}
 	}
 
@@ -57,14 +55,17 @@ public class HelloWebServer {
 			ServerBootstrap b = new ServerBootstrap();
 
 			if (multiplexer == IoMultiplexer.EPOLL) {
+				b.option(EpollChannelOption.SO_BUSY_POLL, 1);
 				b.option(EpollChannelOption.SO_REUSEPORT, true);
 			}
 			
 			if (multiplexer == IoMultiplexer.IO_URING) {
 				b.option(IOUringChannelOption.SO_REUSEPORT, true);
 			}
-			
+
+			b.option(ChannelOption.TCP_NODELAY, true);
 			b.option(ChannelOption.SO_BACKLOG, 8192);
+
 			b.option(ChannelOption.SO_REUSEADDR, true);
 			b.group(loupGroup).channel(serverChannelClass).childHandler(new HelloServerInitializer(loupGroup.next()));
 			b.childOption(ChannelOption.SO_REUSEADDR, true);
