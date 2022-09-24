@@ -27,12 +27,9 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.*;
 import io.netty.util.AsciiString;
 import io.netty.util.CharsetUtil;
-import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.FastThreadLocal;
 
 public class HelloServerHandler extends ChannelInboundHandlerAdapter {
@@ -68,12 +65,12 @@ public class HelloServerHandler extends ChannelInboundHandlerAdapter {
 	private static final byte[] STATIC_PLAINTEXT = "Hello, World!".getBytes(CharsetUtil.UTF_8);
 	private static final int STATIC_PLAINTEXT_LEN = STATIC_PLAINTEXT.length;
 
-	private static final CharSequence PLAINTEXT_CLHEADER_VALUE = AsciiString.cached(String.valueOf(STATIC_PLAINTEXT_LEN));
+	private static final AsciiString PLAINTEXT_CLHEADER_VALUE = AsciiString.cached(String.valueOf(STATIC_PLAINTEXT_LEN));
 	private static final int JSON_LEN = jsonLen();
-	private static final CharSequence JSON_CLHEADER_VALUE = AsciiString.cached(String.valueOf(JSON_LEN));
-	private static final CharSequence SERVER_NAME = AsciiString.cached("Netty");
+	private static final AsciiString JSON_CLHEADER_VALUE = AsciiString.cached(String.valueOf(JSON_LEN));
+	private static final AsciiString SERVER_NAME = AsciiString.cached("Netty");
 
-	private volatile CharSequence date = new AsciiString(FORMAT.get().format(new Date()));
+	private volatile AsciiString date = new AsciiString(FORMAT.get().format(new Date()));
 
 	HelloServerHandler(ScheduledExecutorService service) {
 		service.scheduleWithFixedDelay(new Runnable() {
@@ -88,26 +85,24 @@ public class HelloServerHandler extends ChannelInboundHandlerAdapter {
 
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-		if (msg instanceof HttpRequest) {
-			try {
-				HttpRequest request = (HttpRequest) msg;
-				process(ctx, request);
-			} finally {
-				ReferenceCountUtil.release(msg);
-			}
+		if (msg == LastHttpContent.EMPTY_LAST_CONTENT) {
+			return;
+		}
+		if (msg.getClass() == DefaultHttpRequest.class) {
+			process(ctx, (DefaultHttpRequest) msg);
 		}
 	}
 
 	private void process(ChannelHandlerContext ctx, HttpRequest request) throws Exception {
 		String uri = request.uri();
 		switch (uri) {
-		case "/plaintext":
-			writePlainResponse(ctx, Unpooled.wrappedBuffer(STATIC_PLAINTEXT));
-			return;
-		case "/json":
-			byte[] json = serializeMsg(newMsg());
-			writeJsonResponse(ctx, Unpooled.wrappedBuffer(json));
-			return;
+			case "/plaintext":
+				writePlainResponse(ctx, Unpooled.wrappedBuffer(STATIC_PLAINTEXT));
+				return;
+			case "/json":
+				byte[] json = serializeMsg(newMsg());
+				writeJsonResponse(ctx, Unpooled.wrappedBuffer(json));
+				return;
 		}
 		FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, NOT_FOUND, Unpooled.EMPTY_BUFFER, false);
 		ctx.write(response).addListener(ChannelFutureListener.CLOSE);
@@ -121,13 +116,14 @@ public class HelloServerHandler extends ChannelInboundHandlerAdapter {
 		ctx.write(makeResponse(buf, APPLICATION_JSON, JSON_CLHEADER_VALUE), ctx.voidPromise());
 	}
 
-	private FullHttpResponse makeResponse(ByteBuf buf, CharSequence contentType, CharSequence contentLength) {
-		final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, buf, false);
-		response.headers()
-				.set(CONTENT_TYPE, contentType)
-				.set(SERVER, SERVER_NAME)
-				.set(DATE, date)
-				.set(CONTENT_LENGTH, contentLength);
+	private FullHttpResponse makeResponse(ByteBuf buf, AsciiString contentType, AsciiString contentLength) {
+		final ReadOnlyHttpHeaders headers = new ReadOnlyHttpHeaders(false, new AsciiString[]{
+				CONTENT_TYPE, contentType,
+				SERVER, SERVER_NAME,
+				DATE, date,
+				CONTENT_LENGTH, contentLength
+		});
+		final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, buf, headers, EmptyHttpHeaders.INSTANCE);
 		return response;
 	}
 
