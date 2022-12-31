@@ -3,6 +3,7 @@ WORKDIR /quarkus
 ENV MODULE=resteasy-reactive-hibernate
 
 COPY pom.xml pom.xml
+COPY Directives.json Directives.json
 COPY quarkus-benchmark-common quarkus-benchmark-common/
 COPY resteasy-hibernate resteasy-hibernate/
 COPY resteasy-reactive-hibernate resteasy-reactive-hibernate/
@@ -33,6 +34,7 @@ COPY --from=maven /quarkus/$MODULE/target/quarkus-app/lib/ lib
 COPY --from=maven /quarkus/$MODULE/target/quarkus-app/app/ app
 COPY --from=maven /quarkus/$MODULE/target/quarkus-app/quarkus/ quarkus
 COPY --from=maven /quarkus/$MODULE/target/quarkus-app/quarkus-run.jar quarkus-run.jar
+COPY --from=maven /quarkus/Directives.json Directives.json
 COPY run_quarkus.sh run_quarkus.sh
 
 EXPOSE 8080

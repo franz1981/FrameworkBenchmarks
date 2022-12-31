@@ -11,6 +11,8 @@
 
 JAVA_OPTIONS="-server \
   -Dquarkus.vertx.prefer-native-transport=true  \
+  -XX:+UnlockDiagnosticVMOptions \
+  -XX:CompilerDirectivesFile=Directives.json \
   -XX:-StackTraceInThrowable \
   -Dquarkus.http.accept-backlog=-1 \
   -Dio.netty.buffer.checkBounds=false \

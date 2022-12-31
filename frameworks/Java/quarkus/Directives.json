@@ -1,0 +1,7 @@
+[
+  {
+    match: "*HttpResponseEncoder.encodeInitialLine",
+
+    inline : ["+*HttpResponseEncoder.encodeInitialLine"]
+  }
+]
