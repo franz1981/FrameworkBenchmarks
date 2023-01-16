@@ -13,9 +13,10 @@ JAVA_OPTIONS="-server \
   -Dquarkus.vertx.prefer-native-transport=true  \
   -XX:-StackTraceInThrowable \
   -Dquarkus.http.accept-backlog=-1 \
-  -Dio.netty.buffer.checkBounds=false \
+  -Dio.netty.buffer.checkBounds=false \Disable
   -Dio.netty.buffer.checkAccessible=false \
   -Djava.util.logging.manager=org.jboss.logmanager.LogManager \
+  -Dquarkus.http.idle-timeout=0 \
   -XX:-UseBiasedLocking \
   -XX:+UseStringDeduplication \
   -XX:+UseNUMA \
