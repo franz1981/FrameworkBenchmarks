@@ -9,6 +9,7 @@
 
     <properties>
         <quarkus.version>3.0.3.Final</quarkus.version>
+        <quarkus-plugin.version>3.0.0.Beta1</quarkus-plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
         <maven.compiler.source>11</maven.compiler.source>
@@ -76,7 +77,7 @@
             <plugin>
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-bootstrap-maven-plugin</artifactId>
-                <version>${quarkus.version}</version>
+                <version>${quarkus-plugin.version}</version>
             </plugin>
         </plugins>
     </build>
