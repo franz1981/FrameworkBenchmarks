@@ -1,4 +1,4 @@
-FROM docker.io/maven:3.8.4-eclipse-temurin-11 as maven
+FROM docker.io/maven:3.9.1-eclipse-temurin-17 as maven
 
 WORKDIR /quarkus
 ENV MODULE=resteasy-hibernate
@@ -26,7 +26,7 @@ WORKDIR /quarkus/$MODULE
 RUN mvn package -B -q
 WORKDIR /quarkus
 
-FROM docker.io/maven:3.8.4-eclipse-temurin-11
+FROM docker.io/maven:3.9.1-eclipse-temurin-17
 WORKDIR /quarkus
 ENV MODULE=resteasy-hibernate
 
