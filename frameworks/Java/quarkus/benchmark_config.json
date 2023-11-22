@@ -47,6 +47,29 @@
         "display_name": "Quarkus, Hibernate Reactive",
         "notes": "",
         "versus": "Netty"
+      },
+      "muggle": {
+        "json_url": "/json",
+        "db_url": "/db",
+        "query_url": "/queries?queries=",
+        "update_url": "/updates?queries=",
+        "fortune_url": "/fortunes",
+        "plaintext_url": "/plaintext",
+        "port": 8080,
+        "approach": "Realistic",
+        "classification": "Micro",
+        "database": "Postgres",
+        "framework": "Quarkus",
+        "language": "Java",
+        "flavor": "None",
+        "orm": "Raw",
+        "platform": "Vert.x",
+        "webserver": "Vert.x",
+        "os": "Linux",
+        "database_os": "Linux",
+        "display_name": "Quarkus, Muggle",
+        "notes": "",
+        "versus": "Vert.x"
       }
     }
   ]
