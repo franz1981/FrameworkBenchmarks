@@ -29,6 +29,7 @@
         <module>resteasy-reactive-hibernate</module>
         <module>resteasy-reactive-hibernate-reactive</module>
         <module>muggle</module>
+        <module>reactive-routes-pgclient</module>
     </modules>
 
     <dependencyManagement>
