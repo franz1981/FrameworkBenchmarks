@@ -9,6 +9,7 @@ COPY --chown=185 quarkus-benchmark-common quarkus-benchmark-common/
 COPY --chown=185 resteasy-reactive-hibernate resteasy-reactive-hibernate/
 COPY --chown=185 resteasy-reactive-hibernate-reactive resteasy-reactive-hibernate-reactive/
 COPY --chown=185 muggle muggle/
+COPY --chown=185 reactive-routes-pgclient reactive-routes-pgclient/
 
 # Uncomment to test pre-release quarkus
 #RUN mkdir -p /root/.m2/repository/io
