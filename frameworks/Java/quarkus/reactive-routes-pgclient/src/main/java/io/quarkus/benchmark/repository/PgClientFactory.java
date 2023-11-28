@@ -3,6 +3,7 @@ package io.quarkus.benchmark.repository;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.vertx.mutiny.sqlclient.SqlClient;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -38,7 +39,7 @@ public class PgClientFactory {
     }
 
 
-    PgPool sqlClient(final int size) {
+    SqlClient sqlClient(final int size) {
         final PoolOptions options = new PoolOptions();
         final PgConnectOptions connectOptions = new PgConnectOptions();
         final Matcher matcher = Pattern.compile(PG_URI_MATCHER).matcher(url);
@@ -52,6 +53,6 @@ public class PgClientFactory {
         // Large pipelining means less flushing and we use a single connection anyway
         connectOptions.setPipeliningLimit(100_000);
         options.setMaxSize(size);
-        return PgPool.pool(vertx, connectOptions, options);
+        return PgPool.client(vertx, connectOptions, options);
     }
 }
