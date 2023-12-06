@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class PgConnectionPool implements AutoCloseable {
 
-    static final String UPDATE_WORLD = "UPDATE world SET randomnumber=$1 WHERE id=$2";
     static final String SELECT_WORLD = "SELECT id, randomnumber from WORLD where id=$1";
     static final String SELECT_FORTUNE = "SELECT id, message from FORTUNE";
     private final FastThreadLocal<PgClientConnection> pgConnectionPool;
@@ -112,9 +111,14 @@ public class PgConnectionPool implements AutoCloseable {
                             .andThen(onSuccess(ps -> result.SELECT_WORLD_QUERY = ps.query()));
                     final Future<PreparedStatement> f2 = conn.prepare(SELECT_FORTUNE)
                             .andThen(onSuccess(ps -> result.SELECT_FORTUNE_QUERY = ps.query()));
-                    final Future<PreparedStatement> f3 = conn.prepare(UPDATE_WORLD)
-                            .andThen(onSuccess(ps -> result.UPDATE_WORLD_QUERY = ps.query()));
-                    return Future.join(f1, f2, f3);
+
+                    final int QUERIES = 500;
+                    result.UPDATE_WORLD_QUERY = new PreparedQuery[QUERIES];
+                    var updateWorldQueries = new ArrayList<Future<PreparedStatement>>(QUERIES);
+                    for (int queryCount = 1; queryCount <= QUERIES; queryCount++) {
+                        updateWorldQueries.add(result.prepareUpdateQueryFor(conn, queryCount));
+                    }
+                    return Future.join(f1, f2, Future.join(updateWorldQueries));
                 }).onComplete(ar -> {
                     if (ar.failed() && result.connection != null) {
                         result.connection.close();
@@ -162,7 +166,7 @@ public class PgConnectionPool implements AutoCloseable {
         private int executorId;
         private PreparedQuery<RowSet<Row>> SELECT_WORLD_QUERY;
         private PreparedQuery<RowSet<Row>> SELECT_FORTUNE_QUERY;
-        private PreparedQuery<RowSet<Row>> UPDATE_WORLD_QUERY;
+        private PreparedQuery<RowSet<Row>>[] UPDATE_WORLD_QUERY;
         private SqlClientInternal connection;
 
         public PreparedQuery<RowSet<Row>> selectWorldQuery() {
@@ -173,8 +177,28 @@ public class PgConnectionPool implements AutoCloseable {
             return SELECT_FORTUNE_QUERY;
         }
 
-        public PreparedQuery<RowSet<Row>> updateWorldQuery() {
-            return UPDATE_WORLD_QUERY;
+        public PreparedQuery<RowSet<Row>> updateWorldQuery(int queryCount) {
+            return UPDATE_WORLD_QUERY[queryCount - 1];
+        }
+
+        private Future<PreparedStatement> prepareUpdateQueryFor(PgConnection connection, int queryCount) {
+            return connection.prepare(updateQueryFor(queryCount)).andThen(onSuccess(ps -> UPDATE_WORLD_QUERY[queryCount - 1] = ps.query()));
+        }
+        private static String updateQueryFor(int queryCount) {
+            StringBuilder sql = new StringBuilder();
+            sql.append("UPDATE WORLD SET RANDOMNUMBER = CASE ID");
+            for (int i = 0; i < queryCount; i++) {
+                int offset = (i * 2) + 1;
+                sql.append(" WHEN $" + offset + " THEN $" + (offset + 1));
+            }
+            sql.append(" ELSE RANDOMNUMBER");
+            sql.append(" END WHERE ID IN ($1");
+            for (int i = 1; i < queryCount; i++) {
+                int offset = (i * 2) + 1;
+                sql.append(",$" + offset);
+            }
+            sql.append(")");
+            return sql.toString();
         }
 
         public SqlClientInternal rawConnection() {

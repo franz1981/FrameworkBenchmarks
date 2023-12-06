@@ -122,11 +122,13 @@ public class WorldRepository {
 
         private void randomWorldsQueryCompleted() {
             Arrays.sort(worldsToUpdate);
-            final List<Tuple> updateBatch = new ArrayList<>(worldsToUpdate.length);
-            for (final World world : worldsToUpdate) {
-                updateBatch.add(Tuple.of(world.getRandomNumber(), world.getId()));
+            final List<Integer> params = new ArrayList<>(worldsToUpdate.length * 2);
+            for (int i = 0, count = worldsToUpdate.length; i < count; i++) {
+                var world = worldsToUpdate[i];
+                params.add(world.getId());
+                params.add(world.getRandomNumber());
             }
-            connection.updateWorldQuery().executeBatch(updateBatch, updateResult -> {
+            connection.updateWorldQuery(worldsToUpdate.length).execute(Tuple.wrap(params), updateResult -> {
                 if (updateResult.failed()) {
                     resultHandler.handle(Future.failedFuture(updateResult.cause()));
                     return;
