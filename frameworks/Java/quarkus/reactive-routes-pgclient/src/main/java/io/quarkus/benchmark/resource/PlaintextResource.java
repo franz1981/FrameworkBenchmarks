@@ -8,7 +8,7 @@ import io.vertx.ext.web.RoutingContext;
 import jakarta.inject.Singleton;
 
 @Singleton
-public class PlaintextResource {
+public class PlaintextResource extends BaseResource {
     private static final String HELLO_WORLD = "Hello, world!";
     private static final Buffer HELLO_WORLD_BUFFER = Buffer.buffer(HELLO_WORLD, "UTF-8");
     private static final CharSequence HELLO_WORLD_LENGTH = HttpHeaders.createOptimized("" + HELLO_WORLD.length());
@@ -16,6 +16,7 @@ public class PlaintextResource {
     @Route(path = "plaintext")
     public void plaintext(final RoutingContext rc) {
         final var response = rc.response();
+        addDefaultheaders(rc);
         final var headers = response.headers();
         headers.add(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.TEXT_PLAIN);
         headers.add(HttpHeaders.CONTENT_LENGTH, HELLO_WORLD_LENGTH);

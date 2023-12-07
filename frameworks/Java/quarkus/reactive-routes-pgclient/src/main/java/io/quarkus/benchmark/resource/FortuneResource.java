@@ -35,6 +35,7 @@ public class FortuneResource extends BaseResource {
                             Collections.sort(fortunes);
                             final var vertxRockerOutput = Fortunes.template(fortunes).render(factories.ioFactory());
                             var res = rc.response();
+                            addDefaultheaders(rc);
                             res.headers().add(HttpHeaders.CONTENT_TYPE, HTML_UTF8_CONTENT_TYPE);
                             res.end(vertxRockerOutput.buffer(), null);
                         },
