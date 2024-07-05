@@ -13,6 +13,7 @@ JAVA_OPTIONS="-server \
   -Dquarkus.http.limits.max-body-size= \
   -Dquarkus.vertx.prefer-native-transport=true  \
   -XX:-StackTraceInThrowable \
+  -XX:+UseHeavyMonitors \
   -Dquarkus.http.accept-backlog=-1 \
   -Dio.netty.buffer.checkBounds=false \
   -Dio.netty.buffer.checkAccessible=false \
